@@ -1,5 +1,4 @@
 
-```
 Node modules (if any)
 node_modules/
 
@@ -25,4 +24,4 @@ Editor folders
 Build files (if you ever add tooling)
 dist/
 build/
-```
+
