@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CipherVault Pro | Enterprise Data Security</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #000000;
+            --secondary: #64748b;
+            --accent: #2563eb;
+            --bg-body: #f8fafc;
+            --card-bg: #ffffff;
+            --input-border: #e2e8f0;
+            --success: #10b981;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+
+        body {
+            background-color: var(--bg-body);
+            color: #1e293b;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- Minimalist Header --- */
+        nav {
+            background: #ffffff;
+            padding: 1.25rem 10%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e2e8f0;
+            position: sticky; top: 0; z-index: 100;
+        }
+
+        .logo { font-size: 1.1rem; font-weight: 700; letter-spacing: -0.5px; display: flex; align-items: center; gap: 8px; color: var(--primary); }
+        .logo i { color: var(--accent); font-size: 1.2rem; }
+
+        .auth-status { font-size: 0.75rem; font-weight: 600; color: var(--secondary); display: flex; align-items: center; gap: 6px; text-transform: uppercase; }
+        .dot { width: 6px; height: 6px; background: var(--success); border-radius: 50%; }
+
+        /* --- Hero Container --- */
+        .app-container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 3rem 1.5rem;
+        }
+
+        .main-card {
+            background: var(--card-bg);
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 500px;
+            padding: 2.5rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+        }
+
+        .tab-nav {
+            display: flex;
+            border-bottom: 1px solid #f1f5f9;
+            margin-bottom: 2rem;
+            gap: 20px;
+        }
+
+        .tab-item {
+            padding: 0.75rem 0.25rem;
+            border: none;
+            background: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--secondary);
+            cursor: pointer;
+            position: relative;
+            transition: 0.2s;
+        }
+
+        .tab-item.active { color: var(--primary); }
+        .tab-item.active::after {
+            content: "";
+            position: absolute; bottom: -1px; left: 0; width: 100%; height: 2px;
+            background: var(--accent);
+        }
+
+        /* --- Fields --- */
+        .group { margin-bottom: 1.5rem; }
+        .label-text { display: block; margin-bottom: 0.5rem; font-size: 0.8rem; font-weight: 600; color: #475569; }
+
+        textarea, .input-ctrl {
+            width: 100%;
+            border: 1px solid var(--input-border);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            font-size: 0.95rem;
+            color: #1e293b;
+            background: #ffffff;
+            transition: all 0.2s;
+        }
+
+        textarea:focus, .input-ctrl:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+
+        .pass-box { position: relative; }
+        .eye-icon { position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); color: #94a3b8; cursor: pointer; }
+
+        .btn-prime {
+            width: 100%;
+            padding: 0.8rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-top: 0.5rem;
+        }
+
+        .btn-prime:hover { background: #222; }
+
+        .res-area {
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid #f1f5f9;
+        }
+
+        .btn-group { display: flex; gap: 10px; margin-top: 1rem; }
+        .btn-outline {
+            flex: 1; padding: 0.6rem; border: 1px solid #e2e8f0; background: white;
+            color: #475569; border-radius: 6px; font-weight: 600; font-size: 0.8rem; cursor: pointer; transition: 0.2s;
+        }
+        .btn-outline:hover { background: #f8fafc; border-color: #cbd5e1; }
+
+        /* --- Signature Footer --- */
+        footer {
+            padding: 4rem 10% 2rem;
+            background: #ffffff;
+            border-top: 1px solid #e2e8f0;
+            text-align: center;
+        }
+
+        .footer-links { display: flex; justify-content: center; gap: 2rem; margin-bottom: 1.5rem; }
+        .footer-links a { color: #64748b; font-size: 1.2rem; transition: 0.3s; }
+        .footer-links a:hover { color: var(--accent); transform: scale(1.1); }
+
+        .sig { font-size: 0.85rem; color: #94a3b8; letter-spacing: 0.05rem; }
+        .sig b { color: var(--primary); font-weight: 600; }
+
+        #toast {
+            position: fixed; bottom: 2rem; right: 2rem;
+            background: #1e293b; color: white; padding: 0.75rem 1.5rem;
+            border-radius: 8px; font-size: 0.85rem; font-weight: 500;
+            display: none; animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    </style>
+</head>
+<body>
+
+    <div id="toast">Copied to clipboard</div>
+
+    <nav>
+        <div class="logo"><i class="fas fa-shield-check"></i> CIPHERVAULT PRO</div>
+        <div class="auth-status"><span class="dot"></span> Local Encryption Active</div>
+    </nav>
+
+    <main class="app-container">
+        <div class="main-card">
+            <div class="tab-nav">
+                <button class="tab-item active" id="btnEnc" onclick="setMode('encrypt')">Encrypt</button>
+                <button class="tab-item" id="btnDec" onclick="setMode('decrypt')">Decrypt</button>
+            </div>
+
+            <div class="group">
+                <label class="label-text" id="lblInput">Payload Input</label>
+                <textarea id="valInput" rows="4" placeholder="Enter sensitive text..."></textarea>
+            </div>
+
+            <div class="group">
+                <label class="label-text">Security Passphrase</label>
+                <div class="pass-box">
+                    <input type="password" id="valKey" class="input-ctrl" placeholder="Secret Key">
+                    <i class="fas fa-eye eye-icon" id="eye" onclick="toggleEye()"></i>
+                </div>
+            </div>
+
+            <button class="btn-prime" onclick="process()">
+                <span id="btnLabel">Generate Encrypted Output</span>
+            </button>
+
+            <div class="res-area">
+                <label class="label-text">Resulting Output</label>
+                <textarea id="valOutput" rows="3" readonly placeholder="Output will appear here..."></textarea>
+                <div class="btn-group">
+                    <button class="btn-outline" onclick="copy()"><i class="far fa-copy"></i> Copy Result</button>
+                    <button class="btn-outline" onclick="location.reload()"><i class="fas fa-sync-alt"></i> Reset</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="footer-links">
+            <a href="https://instagram.com/your_id" target="_blank"><i class="fab fa-instagram"></i></a>
+            <a href="https://linkedin.com/in/your_id" target="_blank"><i class="fab fa-linkedin"></i></a>
+            <a href="https://github.com/your_id" target="_blank"><i class="fab fa-github"></i></a>
+        </div>
+        <p class="sig">Designed and Architected by <b>Karndeep Baror</b></p>
+        <p style="margin-top: 10px; font-size: 0.7rem; color: #cbd5e1;">© 2025 Enterprise Security Standards. AES-256 Enabled.</p>
+    </footer>
+
+    <script>
+        let mode = 'encrypt';
+
+        function toggleEye() {
+            const k = document.getElementById('valKey');
+            const e = document.getElementById('eye');
+            if(k.type === 'password') {
+                k.type = 'text';
+                e.classList.replace('fa-eye', 'fa-eye-slash');
+            } else {
+                k.type = 'password';
+                e.classList.replace('fa-eye-slash', 'fa-eye');
+            }
+        }
+
+        function setMode(m) {
+            mode = m;
+            document.getElementById('btnEnc').classList.toggle('active', m === 'encrypt');
+            document.getElementById('btnDec').classList.toggle('active', m === 'decrypt');
+            document.getElementById('lblInput').innerText = m === 'encrypt' ? 'Payload Input' : 'Secret Code Input';
+            document.getElementById('btnLabel').innerText = m === 'encrypt' ? 'Generate Encrypted Output' : 'Decrypt to Plaintext';
+            document.getElementById('valInput').value = "";
+            document.getElementById('valOutput').value = "";
+        }
+
+        function process() {
+            const input = document.getElementById('valInput').value;
+            const key = document.getElementById('valKey').value;
+            const output = document.getElementById('valOutput');
+
+            if(!input || !key) { alert("Missing credentials."); return; }
+
+            try {
+                if(mode === 'encrypt') {
+                    const encrypted = CryptoJS.AES.encrypt(input, key).toString();
+                    // Professional 'Language' Wrap (Encoding)
+                    output.value = "LX-" + btoa(encrypted).match(/.{1,4}/g).join("-");
+                } else {
+                    const raw = input.replace("LX-", "").replaceAll("-", "");
+                    const bytes = CryptoJS.AES.decrypt(atob(raw), key);
+                    const original = bytes.toString(CryptoJS.enc.Utf8);
+                    if(!original) throw new Error();
+                    output.value = original;
+                }
+            } catch(e) {
+                alert("Security Breach: Invalid Key.");
+            }
+        }
+
+        function copy() {
+            const out = document.getElementById('valOutput');
+            if(!out.value) return;
+            out.select();
+            document.execCommand('copy');
+            const t = document.getElementById('toast');
+            t.style.display = 'block';
+            setTimeout(() => { t.style.display = 'none'; }, 2000);
+        }
+    </script>
+</body>
+</html>
