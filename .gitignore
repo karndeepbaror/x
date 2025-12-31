@@ -1,0 +1,28 @@
+
+```
+Node modules (if any)
+node_modules/
+
+System files
+.DS_Store
+Thumbs.db
+
+Logs
+*.log
+
+Environment files
+.env
+.env.local
+
+Cache
+.cache/
+*.cache
+
+Editor folders
+.vscode/
+.idea/
+
+Build files (if you ever add tooling)
+dist/
+build/
+```
