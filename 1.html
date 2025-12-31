@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CipherVault Pro | Secure Infrastructure</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+            --glass-bg: rgba(255, 255, 255, 0.7);
+            --border: rgba(255, 255, 255, 0.5);
+            --accent: #2563eb;
+            --text-h: #0f172a;
+            --text-p: #475569;
+            --shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+
+        body {
+            background: var(--bg-gradient);
+            color: var(--text-h);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* --- Navbar --- */
+        nav {
+            padding: 1.25rem 10%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(15px);
+            border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100;
+        }
+
+        .logo { font-size: 1.1rem; font-weight: 700; color: var(--text-h); display: flex; align-items: center; gap: 10px; }
+        .logo i { background: var(--accent); color: #fff; padding: 8px; border-radius: 8px; font-size: 0.9rem; }
+
+        /* --- Main App UI --- */
+        .wrapper {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px 20px;
+        }
+
+        .cipher-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(25px);
+            border: 2px solid var(--border);
+            border-radius: 24px;
+            width: 100%;
+            max-width: 550px;
+            padding: 40px;
+            box-shadow: var(--shadow);
+        }
+
+        .tab-nav {
+            display: flex;
+            background: rgba(0, 0, 0, 0.05);
+            padding: 5px;
+            border-radius: 14px;
+            margin-bottom: 2rem;
+        }
+
+        .tab {
+            flex: 1; padding: 12px; border: none; background: none;
+            color: var(--text-p); font-weight: 600; font-size: 0.85rem;
+            cursor: pointer; border-radius: 10px; transition: 0.3s;
+        }
+
+        .tab.active { background: #fff; color: var(--accent); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+
+        /* --- Input Styles --- */
+        .group { margin-bottom: 24px; }
+        label { display: block; margin-bottom: 8px; font-size: 0.8rem; font-weight: 700; color: var(--text-p); text-transform: uppercase; letter-spacing: 0.5px; }
+
+        textarea, .input-field {
+            width: 100%; background: #fff; border: 1.5px solid #e2e8f0;
+            border-radius: 12px; padding: 15px; font-size: 0.95rem;
+            transition: 0.2s; color: var(--text-h);
+        }
+
+        textarea:focus, .input-field:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); }
+
+        .pass-wrap { position: relative; }
+        .eye-icon { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: var(--text-p); cursor: pointer; }
+
+        .btn-main {
+            width: 100%; padding: 18px; background: var(--text-h); color: #fff;
+            border: none; border-radius: 14px; font-weight: 600; font-size: 1rem;
+            cursor: pointer; transition: 0.2s; margin-top: 10px;
+        }
+
+        .btn-main:hover { background: #1e293b; transform: translateY(-1px); }
+
+        /* --- Output Section --- */
+        .output-zone {
+            margin-top: 2rem; padding-top: 2rem; border-top: 1px solid #e2e8f0;
+        }
+
+        .util-row { display: flex; gap: 10px; margin-top: 12px; }
+        .btn-sec {
+            flex: 1; padding: 10px; background: #fff; border: 1px solid #e2e8f0;
+            border-radius: 10px; font-size: 0.8rem; font-weight: 600; cursor: pointer; color: var(--text-p);
+        }
+        .btn-sec:hover { background: #f8fafc; border-color: var(--accent); color: var(--accent); }
+
+        /* --- Footer --- */
+        footer {
+            padding: 60px 20px;
+            background: #fff;
+            border-top: 1px solid #e2e8f0;
+            text-align: center;
+        }
+
+        .social-row { display: flex; justify-content: center; gap: 25px; margin-bottom: 20px; }
+        .social-row a { color: var(--text-p); font-size: 1.4rem; transition: 0.3s; }
+        .social-row a:hover { color: var(--accent); transform: scale(1.1); }
+
+        .developer-tag { font-size: 0.85rem; color: var(--text-p); }
+        .developer-tag span { color: var(--text-h); font-weight: 700; }
+
+        #toast {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            background: var(--text-h); color: #fff; padding: 12px 30px;
+            border-radius: 50px; font-weight: 600; font-size: 0.85rem; display: none; z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="toast">Protocol Executed Successfully</div>
+
+    <nav>
+        <div class="logo"><i class="fas fa-fingerprint"></i> CIPHER VAULT</div>
+        <div style="font-size: 0.7rem; font-weight: 700; color: #10b981; display: flex; align-items: center; gap: 6px;">
+            <span style="width: 8px; height: 8px; background: #10b981; border-radius: 50%;"></span> ENCRYPTION READY
+        </div>
+    </nav>
+
+    <main class="wrapper">
+        <div class="cipher-card">
+            <div class="tab-nav">
+                <button class="tab active" id="encTab" onclick="toggleMode('encrypt')">Encryption Mode</button>
+                <button class="tab" id="decTab" onclick="toggleMode('decrypt')">Decryption Mode</button>
+            </div>
+
+            <div class="group">
+                <label id="inputLabel">Original Data</label>
+                <textarea id="mainInput" rows="5" placeholder="Enter sensitive data here..."></textarea>
+            </div>
+
+            <div class="group">
+                <label>Access Credential</label>
+                <div class="pass-wrap">
+                    <input type="password" id="passKey" class="input-field" placeholder="Secret Key">
+                    <i class="fas fa-eye eye-icon" id="eye" onclick="toggleEye()"></i>
+                </div>
+            </div>
+
+            <button class="btn-main" onclick="runTask()">Secure Payload</button>
+
+            <div class="output-zone">
+                <label>Generated Result</label>
+                <textarea id="mainOutput" rows="3" readonly placeholder="Output waiting..."></textarea>
+                <div class="util-row">
+                    <button class="btn-sec" onclick="copy()"><i class="far fa-copy"></i> Copy result</button>
+                    <button class="btn-sec" onclick="location.reload()"><i class="fas fa-trash-alt"></i> Destroy session</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="social-row">
+            <a href="https://instagram.com/your_id" target="_blank"><i class="fab fa-instagram"></i></a>
+            <a href="https://linkedin.com/in/your_id" target="_blank"><i class="fab fa-linkedin"></i></a>
+            <a href="https://github.com/your_id" target="_blank"><i class="fab fa-github"></i></a>
+        </div>
+        <p class="developer-tag">Engineered & Designed by <span>Karndeep Baror</span></p>
+        <p style="font-size: 0.7rem; color: #94a3b8; margin-top: 15px; letter-spacing: 1px;">© 2025 END-TO-END LOCAL ENCRYPTION STANDARD</p>
+    </footer>
+
+    <script>
+        let currentMode = 'encrypt';
+
+        function toggleEye() {
+            const field = document.getElementById('passKey');
+            const eye = document.getElementById('eye');
+            if(field.type === 'password') {
+                field.type = 'text';
+                eye.classList.replace('fa-eye', 'fa-eye-slash');
+            } else {
+                field.type = 'password';
+                eye.classList.replace('fa-eye-slash', 'fa-eye');
+            }
+        }
+
+        function toggleMode(m) {
+            currentMode = m;
+            document.getElementById('encTab').classList.toggle('active', m === 'encrypt');
+            document.getElementById('decTab').classList.toggle('active', m === 'decrypt');
+            document.getElementById('inputLabel').innerText = m === 'encrypt' ? 'Original Data' : 'Encrypted Key';
+            document.getElementById('mainInput').value = "";
+            document.getElementById('mainOutput').value = "";
+        }
+
+        function runTask() {
+            const data = document.getElementById('mainInput').value;
+            const key = document.getElementById('passKey').value;
+            const output = document.getElementById('mainOutput');
+
+            if(!data || !key) return alert("Credentials Missing!");
+
+            try {
+                if(currentMode === 'encrypt') {
+                    const encrypted = CryptoJS.AES.encrypt(data, key).toString();
+                    // Character Shift logic for 'Secret Language' feel
+                    output.value = "CIPHER_PRO_" + btoa(encrypted).split('').reverse().join('');
+                    notify("Encryption Success");
+                } else {
+                    const raw = data.replace("CIPHER_PRO_", "").split('').reverse().join('');
+                    const bytes = CryptoJS.AES.decrypt(atob(raw), key);
+                    const original = bytes.toString(CryptoJS.enc.Utf8);
+                    if(!original) throw new Error();
+                    output.value = original;
+                    notify("Decryption Success");
+                }
+            } catch(e) {
+                alert("ACCESS DENIED: Invalid Key.");
+            }
+        }
+
+        function copy() {
+            const out = document.getElementById('mainOutput');
+            if(!out.value) return;
+            out.select();
+            document.execCommand('copy');
+            notify("Hash Copied to Clipboard");
+        }
+
+        function notify(msg) {
+            const t = document.getElementById('toast');
+            t.innerText = msg;
+            t.style.display = 'block';
+            setTimeout(() => { t.style.display = 'none'; }, 2000);
+        }
+    </script>
+</body>
+</html>
