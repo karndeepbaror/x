@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CipherVault Pro | Enterprise Dashboard</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg: #f3f4f6;
+            --card: #ffffff;
+            --accent: #2563eb;
+            --text-dark: #111827;
+            --text-light: #6b7280;
+            --border: #e5e7eb;
+            --shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.08);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+
+        body {
+            background: var(--bg);
+            color: var(--text-dark);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- Global Navbar --- */
+        nav {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 10%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky; top: 0; z-index: 1000;
+        }
+
+        .logo { font-size: 1.2rem; font-weight: 800; display: flex; align-items: center; gap: 10px; color: var(--text-dark); }
+        .logo i { background: var(--accent); color: white; padding: 8px; border-radius: 10px; font-size: 1rem; }
+
+        /* --- Responsive Wrapper --- */
+        .container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+
+        .cipher-card {
+            background: var(--card);
+            width: 100%;
+            /* Desktop par ye fail jayega, Mobile par chhota rahega */
+            max-width: 800px; 
+            padding: 3rem;
+            border-radius: 24px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            transition: 0.3s ease;
+        }
+
+        .tab-nav {
+            display: flex;
+            background: #f9fafb;
+            padding: 6px;
+            border-radius: 14px;
+            margin-bottom: 2.5rem;
+            border: 1px solid var(--border);
+        }
+
+        .tab {
+            flex: 1; padding: 14px; border: none; background: transparent;
+            color: var(--text-light); font-weight: 700; font-size: 0.95rem;
+            cursor: pointer; border-radius: 10px; transition: 0.2s;
+        }
+
+        .tab.active { background: white; color: var(--accent); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+
+        /* --- Layout Grid for Desktop --- */
+        .grid-inputs {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Desktop view me do column banane ke liye */
+        @media (min-width: 768px) {
+            .grid-inputs { grid-template-columns: 1fr 1fr; }
+            .full-row { grid-column: span 2; }
+        }
+
+        .field-group { display: flex; flex-direction: column; gap: 8px; }
+        label { font-size: 0.8rem; font-weight: 700; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.5px; }
+
+        textarea, input {
+            width: 100%; padding: 1rem; background: #f9fafb;
+            border: 1px solid var(--border); border-radius: 12px;
+            font-size: 1rem; color: var(--text-dark); transition: 0.2s;
+        }
+
+        textarea:focus, input:focus { outline: none; border-color: var(--accent); background: #fff; box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); }
+
+        .pass-container { position: relative; }
+        .eye-btn { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: var(--text-light); cursor: pointer; }
+
+        .btn-action {
+            width: 100%; padding: 1.2rem; background: var(--text-dark); color: white;
+            border: none; border-radius: 12px; font-weight: 700; font-size: 1.1rem;
+            cursor: pointer; transition: 0.2s;
+        }
+        .btn-action:hover { background: #1f2937; transform: translateY(-2px); }
+
+        /* --- Footer --- */
+        footer {
+            padding: 4rem 10% 2rem;
+            background: #fff;
+            border-top: 1px solid var(--border);
+            text-align: center;
+        }
+
+        .socials { display: flex; justify-content: center; gap: 2.5rem; margin-bottom: 2rem; }
+        .socials a { color: var(--text-light); font-size: 1.5rem; transition: 0.3s; }
+        .socials a:hover { color: var(--accent); transform: scale(1.2); }
+
+        .credit { font-size: 0.9rem; color: var(--text-light); }
+        .credit b { color: var(--text-dark); }
+
+        #toast {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+            background: var(--text-dark); color: white; padding: 12px 32px;
+            border-radius: 50px; font-weight: 600; display: none; z-index: 2000;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="toast">Protocol Success</div>
+
+    <nav>
+        <div class="logo"><i class="fas fa-lock-open"></i> CIPHERVAULT</div>
+        <div style="font-size: 0.75rem; font-weight: 700; color: #10b981;"><i class="fas fa-circle"></i> NODE ACTIVE</div>
+    </nav>
+
+    <div class="container">
+        <div class="cipher-card">
+            <div class="tab-nav">
+                <button class="tab active" id="encTab" onclick="setMode('encrypt')">Encryption</button>
+                <button class="tab" id="decTab" onclick="setMode('decrypt')">Decryption</button>
+            </div>
+
+            <div class="grid-inputs">
+                <div class="field-group full-row">
+                    <label id="inputLabel">Input Content</label>
+                    <textarea id="mainInput" rows="4" placeholder="Type or paste your data..."></textarea>
+                </div>
+
+                <div class="field-group">
+                    <label>Security Credential</label>
+                    <div class="pass-container">
+                        <input type="password" id="passKey" placeholder="Access key">
+                        <i class="fas fa-eye eye-btn" onclick="togglePass()"></i>
+                    </div>
+                </div>
+
+                <div class="field-group">
+                    <label>Action</label>
+                    <button class="btn-action" onclick="run()">Proceed Securely</button>
+                </div>
+
+                <div class="field-group full-row">
+                    <label>Output Buffer</label>
+                    <textarea id="mainOutput" rows="3" readonly placeholder="Result waiting..."></textarea>
+                    <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                        <button class="tab" style="background: #f3f4f6; color: #111827;" onclick="copy()">Copy Result</button>
+                        <button class="tab" style="background: #fee2e2; color: #ef4444;" onclick="location.reload()">Clear</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="socials">
+            <a href="https://instagram.com/your_id" target="_blank"><i class="fab fa-instagram"></i></a>
+            <a href="https://linkedin.com/in/your_id" target="_blank"><i class="fab fa-linkedin"></i></a>
+            <a href="https://github.com/your_id" target="_blank"><i class="fab fa-github"></i></a>
+        </div>
+        <p class="credit">Engineered & Designed by <b>Karndeep Baror</b></p>
+    </footer>
+
+    <script>
+        let mode = 'encrypt';
+
+        function togglePass() {
+            const p = document.getElementById('passKey');
+            p.type = p.type === 'password' ? 'text' : 'password';
+        }
+
+        function setMode(m) {
+            mode = m;
+            document.getElementById('encTab').classList.toggle('active', m === 'encrypt');
+            document.getElementById('decTab').classList.toggle('active', m === 'decrypt');
+            document.getElementById('inputLabel').innerText = m === 'encrypt' ? 'Input Content' : 'Secret Hash';
+            document.getElementById('mainInput').value = "";
+            document.getElementById('mainOutput').value = "";
+        }
+
+        function run() {
+            const data = document.getElementById('mainInput').value;
+            const key = document.getElementById('passKey').value;
+            const output = document.getElementById('mainOutput');
+
+            if(!data || !key) return alert("System Notice: Key and Data required.");
+
+            try {
+                if(mode === 'encrypt') {
+                    const enc = CryptoJS.AES.encrypt(data, key).toString();
+                    output.value = "VAULT_v1_" + btoa(enc).split('').reverse().join('');
+                    showToast("Data Encrypted");
+                } else {
+                    const raw = data.replace("VAULT_v1_", "").split('').reverse().join('');
+                    const bytes = CryptoJS.AES.decrypt(atob(raw), key);
+                    const original = bytes.toString(CryptoJS.enc.Utf8);
+                    if(!original) throw new Error();
+                    output.value = original;
+                    showToast("Data Decrypted");
+                }
+            } catch(e) {
+                alert("Security Alert: Invalid Access Key.");
+            }
+        }
+
+        function copy() {
+            const out = document.getElementById('mainOutput');
+            out.select();
+            document.execCommand('copy');
+            showToast("Copied to Clipboard");
+        }
+
+        function showToast(m) {
+            const t = document.getElementById('toast');
+            t.innerText = m;
+            t.style.display = 'block';
+            setTimeout(() => t.style.display = 'none', 2000);
+        }
+    </script>
+</body>
+</html>
